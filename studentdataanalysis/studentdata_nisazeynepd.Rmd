@@ -1,0 +1,169 @@
+---
+title: "STUDENT DATA ANALYSIS"
+author: "nisazeynepd"
+date: "`r Sys.Date()`"
+output: html_document
+---
+### [veri seti](https://www.kaggle.com/datasets/erqizhou/students-data-analysis)
+```{r}
+library(readxl)
+Students_data <- read_excel("C:/R/students-data/Students-data.xls")
+View(Students_data)
+```
+
+#### En düşük ve en yüksek GPA'yı görüp GPA ortalamasını bulalım.
+```{r}
+min(Students_data$GPA)
+max(Students_data$GPA)
+ort_gpa <- mean(Students_data$GPA)
+ort_gpa
+```
+
+#### Cinsiyete göre GPA dağılımını görelim.
+```{r}
+library(ggplot2)
+Students_data
+gender.data<- Students_data$gender
+gpa.data<- Students_data$GPA
+ggplot(Students_data, aes(x =gender.data , y =gpa.data )) +
+  geom_point()
+```
+
+
+##### Grafikten görüldüğü üzere en düşük GPA 65'ten biraz düşük olup bir erkek öğrenciye aittir. En yüksek GPA da bir erkek öğrenciye aittir ve 90'dan büyüktür. Verideki max min GPA notlarını bulduğumuz için grafikten yaklaşık değer söylemek yerine o notları da gösterebiliriz. Yani min olan GPA 63.49 ve max GPA da 93.71'dir. Grafikten bu değerleri nokta atışı söylemek mümkün olmayabilir ama max min fonksiyonu ile sorunu çözebiliriz.
+
+#### Öğrencilerin ders başarılarının ortalamalarını yeni bir dataframede görelim.
+```{r}
+mean_lessons <- data.frame(
+  m_algebra=mean(Students_data$Algebra),
+  m_calculus1=mean(Students_data$Calculus1),
+  m_calculus2=mean(Students_data$Calculus2),
+  m_statistic=mean(Students_data$Statistics),
+  m_probability=mean(Students_data$Probability),
+  m_measure=mean(Students_data$Measure),
+  m_FA=mean(Students_data$Functional_analysis)
+)
+mean_lessons
+```
+##### Öğrencilerin istatistikte daha başarılı olduğu söylenebilir. Ortalamalara bakıldığında öğrencilerin analiz 1 dersinde daha az başarı gösterdikleri söylenebilir.
+
+#### Sınıftaki öğrenci cinsiyet oranını görelim.
+```{r}
+gender_data <- table(Students_data$gender)
+pie(gender_data, 
+    labels = c("female", "male"), 
+    main = "gender")
+
+```
+
+##### Sınıftaki öğrencilerin yarısından fazlası kız öğrencidir.
+
+#### Sınıftaki öğrenci cinsiyet oranını bulalım.
+```{r}
+male <- sum(Students_data$gender == "male")
+female <- sum(Students_data$gender == "female")
+sum_gender <- male + female
+
+male_ratio <- male / sum_gender
+female_ratio <- female / sum_gender
+
+cat("Erkek öğrenci oranı: ", male_ratio, "\n")
+cat("Kız öğrenci oranı: ", female_ratio, "\n")
+
+```
+
+#### Cinsiyete göre istatistik notu dağılımını görelim
+```{r}
+library(ggplot2)
+Students_data
+gender.data<- Students_data$gender
+stat.data<- Students_data$Statistics
+ggplot(Students_data, aes(x =gender.data , y =stat.data )) +
+  geom_point()
+```
+
+
+##### Grafikten görüldüğü üzere istatistikten en düşük not 50'den biraz fazla olup bir kız öğrenci tarafından alınmıştır. En yüksek not ise bir erkek öğrenciye ait olup 100'dür. Grafiğe bakarak 75-100 aralığındaki not sıklığının kız öğrencilerde daha fazla olduğunu gördüğümüzden kızların istatistik ortalamasının erkeklerden fazla olduğunu düşünebiliriz. Aşağıdaki kod ile bu düşüncemizin sağlamasını yapalım.
+
+#### Cinsiyete göre istatistik not ortalamalarını görelim.
+```{r}
+gender_stats_data<- Students_data[, c("gender", "Statistics")]
+gender_stats_data
+
+library(dplyr)
+gender_stats_data %>%
+  group_by(gender) %>%
+  summarize(mean_stats = mean(Statistics))
+```
+##### Ortalamalar birbirine çok yakın olsa da kız öğrencilerin istatistik dersindeki başarısı daha fazladır. Grafikten doğru bir çıkarım yapmışız demektir.
+
+#### Sınıf şubelerine göre derslerin ortalamasını görelim.
+```{r}
+class_A_data <- Students_data[Students_data$class == "A", ]
+class_A_data
+data_A <- c("Algebra", "Calculus1", "Calculus2", "Statistics", "Probability","Measure", "Functional_analysis")
+colMeans(class_A_data[, data_A])
+
+class_B_data <- Students_data[Students_data$class == "B", ]
+class_B_data
+data_B <- c("Algebra", "Calculus1", "Calculus2", "Statistics", "Probability","Measure", "Functional_analysis")
+colMeans(class_B_data[, data_B])
+```
+##### A şubesinin sadece Analiz 1 dersinde B şubesinden başarılı olduğu, diğer derslerde B şubesinin daha başarılı olduğu görülmüştür. 
+
+#### Öğrencilerin en az başarı gösterdiği analiz 1 dersi için cinsiyete göre dağılımı görüp matematiksel sonuca ulaşalım.
+```{r}
+library(ggplot2)
+Students_data
+gender.data<- Students_data$gender
+calculus1.data<- Students_data$Calculus1
+ggplot(Students_data, aes(x =gender.data , y =calculus1.data )) +
+  geom_point()
+```
+
+
+##### Grafikten kız öğrencilerin analiz 1 dersindeki başarısının erkek öğrencilerin başarısından az olduğunu bariz görebiliriz.
+```{r}
+gender_calculus1_data<- Students_data[, c("gender", "Calculus1")]
+gender_calculus1_data
+
+library(dplyr)
+gender_calculus1_data %>%
+  group_by(gender) %>%
+  summarize(mean_calculus1 = mean(Calculus1))
+```
+##### Grafikten bu çıkarım yapılmıştı ve matematiksel sonuca da baktığımızda kız öğrencilerin analiz 1 dersindeki başarısı erkek öğrencilerin başarısından düşüktür deriz.
+
+##### En yüksek GPA'ya sahip öğrencinin cinsiyetini, şubesini, en yüksek ve en düşük notları ve hangi dersler olduğunu bulalım.
+```{r}
+max_gpa_st <- Students_data[which.max(Students_data$GPA), ]
+max_gpa_st
+```
+##### En yüksek GPA'ya sahip öğrenci A şubesinden erkek bir öğrencidir. En yüksek notu istatistikten olup 100'dür. En düşük notu ise cebir dersinden olup 93'tür.
+
+#### En düşük GPA'ya sahip öğrencinin cinsiyetini, şubesini, en yüksek ve en düşük notları ve hangi dersler olduğunu bulalım.
+```{r}
+min_gpa_st <- Students_data[which.min(Students_data$GPA), ]
+min_gpa_st
+```
+##### En düşük GPA'ya sahip öğrenci A şubesinden erkek bir öğrencidir. En yüksek notu istatistikten olup 92'dir. En düşük notu ise analiz 2 dersinden olup 17'dir.
+#### Analiz 1 ve analiz 2 derslerinin notlarının ortalamasını analiz sütunu oluşturup dataframe'e ekleyelim.
+```{r}
+Students_data$calculus <- (Students_data$Calculus1 + Students_data$Calculus2) / 2
+print(Students_data)
+```
+
+#### Analiz sütunundan max notu ve bu öğrencinin diğer bilgilerini görelim.
+```{r}
+max_calculus_st <- Students_data[which.max(Students_data$calculus), ]
+max_calculus_st
+```
+##### Analiz 1 ve analiz 2 derslerinin ortalaması olan analiz sütununun notlarına göre en yüksek not A sınıfından bir erkek öğrencinindir ve 2 dersinin ortalaması yani analiz notu 98'dir. Bu öğrencinin en yüksek analiz notu analiz 1 dersinden ve 100'dür. Analiz 2 dersi ise 96'dır.
+
+#### Analiz sütunundan min notu ve bu öğrencinin diğer bilgilerini görelim.
+```{r}
+min_calculus_st <- Students_data[which.min(Students_data$calculus), ]
+min_calculus_st
+```
+##### Analiz 1 ve analiz 2 derslerinin ortalaması olan analiz sütununun notlarına göre en düşük not  A sınıfından bir erkek öğrencinindir ve 2 dersinin ortalaması yani analiz notu 39'dur. Bu öğrencinin en düşük analiz notu analiz 2 dersinden ve 17'dir. Analiz 2 dersi ise 61'dir.
+
